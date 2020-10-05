@@ -200,8 +200,9 @@ group:
         view: true
 '''
 
-from ansible_collections.community.general.plugins.module_utils.identity.keycloak.keycloak import KeycloakAPI, camel, \
+from ansible_collections.community.general.plugins.module_utils.identity.keycloak.keycloak import camel, \
     keycloak_argument_spec, get_token, KeycloakError
+from ansible_collections.community.general.plugins.module_utils.identity.keycloak.keycloak_group import KeycloakGroupAPI
 from ansible.module_utils.basic import AnsibleModule
 
 
@@ -241,7 +242,7 @@ def main():
         )
     except KeycloakError as e:
         module.fail_json(msg=str(e))
-    kc = KeycloakAPI(module, connection_header)
+    kc = KeycloakGroupAPI(module, connection_header)
 
     realm = module.params.get('realm')
     state = module.params.get('state')
