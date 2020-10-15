@@ -258,6 +258,7 @@ def main():
         realm=dict(default='master'),
         id=dict(type='str'),
         username=dict(type='str'),
+        enabled=dict(type='bool', default=True),
         credentials=dict(type='list', elements='dict', options=credential_spec),
         groups=dict(type='list', elements='str'),
         attributes=dict(type='dict')

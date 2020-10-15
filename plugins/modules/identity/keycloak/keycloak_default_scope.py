@@ -165,6 +165,7 @@ def main():
         state=dict(default='present', choices=['present', 'absent']),
         cid=dict(type='str'),
         scope_names=dict(type='list', elements='str'),
+        delete_on_present=dict(type='bool', default=False)
     )
     argument_spec.update(meta_args)
 
@@ -193,36 +194,49 @@ def main():
     realm = module.params.get('realm')
     scope_names = module.params.get('scope_names')
     cid = module.params.get('cid')
+    state=module.params.get('state')
+    delete_on_present=module.params.get('delete_on_present')
 
-    all_scopes=kcscopes.get_client_scopes(realm)
+    all_scopes_full=kcscopes.get_client_scopes(realm)
+    all_scopes = []
+    for s in all_scopes_full:
+        scope = dict(id=s['id'], name=s['name'])
+        all_scopes.append(scope)
 
-    scopes_after=[item for item in all_scopes if item['name'] in scope_names]
     scopes_before=kc.get_default_scopes(realm=realm, cid=cid)
+    scopes_after=[item for item in all_scopes if item['name'] in scope_names]
+    
+    if state == 'present':
+        changed = False if scopes_after == scopes_before else True
 
-    changed = False if scopes_after == scopes_before else True
+        if not changed:
+            result['msg'] = "No changes required."
+            if module._diff:
+                result['diff'] = dict(before='', after='')
+            module.exit_json(**result)
+        result['changed']=True
 
-    if not changed:
-        result['msg'] = "No changes required."
         if module._diff:
-            result['diff'] = dict(before='', after='')
+            result['diff'] = dict(before=scopes_before, after=scopes_after)
+
+        scopes_add=[item for item in scopes_after if item not in scopes_before]   
+        if delete_on_present: 
+            scopes_delete=[item for item in scopes_before if item not in scopes_after]
+            for s in scopes_delete:
+                kc.delete_default_scope(realm=realm,cid=cid, scopeid=s['id'])
+        for s in scopes_add:
+            kc.set_default_scope(realm=realm,cid=cid, scopeid=s['id'])
+
+        result['msg'] = "Default scopes were sucessfully updated."
+
         module.exit_json(**result)
-
-    result['changed']=True
-
-    if module._diff:
-        result['diff'] = dict(before=scopes_before, after=scopes_after)
-
-    scopes_delete=[item for item in scopes_before if item not in scopes_after]
-    scopes_add=[item for item in scopes_after if item not in scopes_before]    
-    for s in scopes_delete:
-        kc.delete_default_scope(realm=realm,cid=cid, scopeid=s.id)
-    for s in scopes_add:
-        kc.set_default_scope(realm=realm,cid=cid, scopeid=s.id)
-
-    result['msg'] = "Default scopes sucessfully updated."
-
-    module.exit_json(**result)
-
+    else:
+        # delete defined scopes
+        # delete all is same as present with empty scopes
+        for s in scopes_after:
+            kc.delete_default_scope(realm=realm,cid=cid, scopeid=s['id'])
+        result['msg'] = "Default scopes were sucessfully deleted."
+        module.exit_json(**result)
 
 if __name__ == '__main__':
     main()

@@ -61,7 +61,7 @@ class KeycloakDefaultScopeAPI(KeycloakAPI):
         """
         default_scope_url = URL_REALM_SCOPES_DEFAULT.format(url=self.baseurl, realm=realm)
         if cid is not None:
-            default_scope_url = URL_CLIENT_SCOPES_DEFAULT.format(url=self.baseurl, realm=realm, userid=cid)        
+            default_scope_url = URL_CLIENT_SCOPES_DEFAULT.format(url=self.baseurl, realm=realm, clientid=cid)        
         return self.open_url_with_result(default_scope_url, method="GET")
 
     def get_optional_scopes(self, cid, realm="master"):
@@ -73,7 +73,7 @@ class KeycloakDefaultScopeAPI(KeycloakAPI):
         """
         optional_scope_url = URL_REALM_SCOPES_OPTIONAL.format(url=self.baseurl, realm=realm)
         if cid is not None:
-            optional_scope_url = URL_CLIENT_SCOPES_OPTIONAL.format(url=self.baseurl, realm=realm, userid=cid)        
+            optional_scope_url = URL_CLIENT_SCOPES_OPTIONAL.format(url=self.baseurl, realm=realm, clientid=cid)        
         return self.open_url_with_result(optional_scope_url, method="GET")
 
     def set_default_scope(self, cid, scopeid,realm="master"):
@@ -86,7 +86,7 @@ class KeycloakDefaultScopeAPI(KeycloakAPI):
         """
         default_scope_url = URL_REALM_SCOPE_DEFAULT.format(url=self.baseurl, realm=realm, scopeid=scopeid)
         if cid is not None:
-            default_scope_url = URL_CLIENT_SCOPE_DEFAULT.format(url=self.baseurl, realm=realm, userid=cid, scopeid=scopeid)        
+            default_scope_url = URL_CLIENT_SCOPE_DEFAULT.format(url=self.baseurl, realm=realm, clientid=cid, scopeid=scopeid)        
         return self.open_url(default_scope_url, method="PUT")
 
     def set_optional_scope(self, cid, scopeid, realm="master"):
@@ -99,12 +99,12 @@ class KeycloakDefaultScopeAPI(KeycloakAPI):
         """
         optional_scope_url = URL_REALM_SCOPE_OPTIONAL.format(url=self.baseurl, realm=realm, scopeid=scopeid)
         if cid is not None:
-            optional_scope_url = URL_CLIENT_SCOPE_OPTIONAL.format(url=self.baseurl, realm=realm, userid=cid, scopeid=scopeid)        
+            optional_scope_url = URL_CLIENT_SCOPE_OPTIONAL.format(url=self.baseurl, realm=realm, clientid=cid, scopeid=scopeid)        
         return self.open_url(optional_scope_url, method="PUT")
 
 
     def delete_default_scope(self, cid, scopeid,realm="master"):
-         """ Delete default scope defined for realm or client
+        """ Delete default scope defined for realm or client
 
         cid is a UUID provided by the Keycloak API
         :param cid: UUID of the client where scope will be deleted.
@@ -113,7 +113,7 @@ class KeycloakDefaultScopeAPI(KeycloakAPI):
         """
         default_scope_url = URL_REALM_SCOPE_DEFAULT.format(url=self.baseurl, realm=realm, scopeid=scopeid)
         if cid is not None:
-            default_scope_url = URL_CLIENT_SCOPE_DEFAULT.format(url=self.baseurl, realm=realm, userid=cid, scopeid=scopeid)        
+            default_scope_url = URL_CLIENT_SCOPE_DEFAULT.format(url=self.baseurl, realm=realm, clientid=cid, scopeid=scopeid)        
         return self.open_url(default_scope_url, method="DELETE")
 
     def delete_optional_scope(self, cid, scopeid, realm="master"):
@@ -126,5 +126,5 @@ class KeycloakDefaultScopeAPI(KeycloakAPI):
         """
         optional_scope_url = URL_REALM_SCOPE_OPTIONAL.format(url=self.baseurl, realm=realm, scopeid=scopeid)
         if cid is not None:
-            optional_scope_url = URL_CLIENT_SCOPE_OPTIONAL.format(url=self.baseurl, realm=realm, userid=cid, scopeid=scopeid)        
+            optional_scope_url = URL_CLIENT_SCOPE_OPTIONAL.format(url=self.baseurl, realm=realm, clientid=cid, scopeid=scopeid)        
         return self.open_url_with_result(optional_scope_url, method="DELETE")
