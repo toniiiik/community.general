@@ -38,6 +38,12 @@ options:
         choices: ['present', 'absent']
         default: 'present'
 
+    with_secret:
+        description:
+            - Determine if client secret is part of the result
+        type: bool
+        default: False
+
     realm:
         description:
             - The realm to create the client in.
@@ -700,6 +706,7 @@ def main():
         use_template_mappers=dict(type='bool', aliases=['useTemplateMappers']),
         protocol_mappers=dict(type='list', elements='dict', options=protmapper_spec, aliases=['protocolMappers']),
         authorization_settings=dict(type='dict', aliases=['authorizationSettings']),
+        with_secret=dict(typ='bool', default=False)
     )
     argument_spec.update(meta_args)
 
@@ -728,10 +735,11 @@ def main():
     realm = module.params.get('realm')
     cid = module.params.get('id')
     state = module.params.get('state')
+    with_secret = module.params.get('with_secret')
 
     # convert module parameters to client representation parameters (if they belong in there)
     client_params = [x for x in module.params
-                     if x not in list(keycloak_argument_spec().keys()) + ['state', 'realm'] and
+                     if x not in list(keycloak_argument_spec().keys()) + ['state', 'realm', 'with_secret'] and
                      module.params.get(x) is not None]
     keycloak_argument_spec().keys()
     # See whether the client already exists in Keycloak
@@ -798,6 +806,10 @@ def main():
         result['end_state'] = sanitize_cr(after_client)
 
         result['msg'] = 'Client %s has been created.' % updated_client['clientId']
+
+        if with_secret:
+            result['end_state']['secret']=kc.get_client_secret(after_client['id'], realm=realm)
+
         module.exit_json(**result)
     else:
         if state == 'present':
@@ -821,6 +833,9 @@ def main():
                 result['diff'] = dict(before=sanitize_cr(before_client),
                                       after=sanitize_cr(after_client))
             result['end_state'] = sanitize_cr(after_client)
+
+            if with_secret:
+                result['end_state']['secret']=kc.get_client_secret(after_client['id'], realm=realm)
 
             result['msg'] = 'Client %s has been updated.' % updated_client['clientId']
             module.exit_json(**result)

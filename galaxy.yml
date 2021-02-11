@@ -18,3 +18,6 @@ repository: https://github.com/ansible-collections/community.general
 homepage: https://github.com/ansible-collections/community.general
 issues: https://github.com/ansible-collections/community.general/issues
 #type: flatmap
+# build_ignore:
+# - .github/
+# - .git/

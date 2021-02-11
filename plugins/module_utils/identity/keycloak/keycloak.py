@@ -38,6 +38,7 @@ from ansible.module_utils._text import to_native
 
 URL_TOKEN = "{url}/realms/{realm}/protocol/openid-connect/token"
 URL_CLIENT = "{url}/admin/realms/{realm}/clients/{id}"
+URL_CLIENT_SECRET = "{url}/admin/realms/{realm}/clients/{id}/client-secret"
 URL_CLIENTS = "{url}/admin/realms/{realm}/clients"
 URL_CLIENT_ROLES = "{url}/admin/realms/{realm}/clients/{id}/roles"
 URL_REALM_ROLES = "{url}/admin/realms/{realm}/roles"
@@ -153,7 +154,6 @@ class KeycloakAPI(object):
             self.module.fail_json(msg="%s %s: %s"
                                       % (open_url_error_msg.get(method, 'Error occured '),url, str(e)))
        
-
     def open_url_with_result(self, url, method, data = None):
         """ Wrapper of open_url
 
@@ -231,6 +231,31 @@ class KeycloakAPI(object):
             return result['id']
         else:
             return None
+
+    def get_client_secret(self, client_id, realm='master'):
+        """ Obtain secret of client by client_id
+
+        :param client_id: client_id of client to be queried
+        :param realm: client template from this realm
+        :return: secret of client 
+        """
+        secret_url=URL_CLIENT_SECRET.format(url=self.baseurl, realm=realm, id=client_id)
+        try:
+            return json.loads(to_native(open_url(secret_url, method='GET', headers=self.restheaders,
+                                                 validate_certs=self.validate_certs).read()))
+
+        except HTTPError as e:
+            if e.code == 404:
+                return None
+            else:
+                self.module.fail_json(msg='Could not obtain client %s for realm %s: %s'
+                                          % (id, realm, str(e)))
+        except ValueError as e:
+            self.module.fail_json(msg='API returned incorrect JSON when trying to obtain client %s for realm %s: %s'
+                                      % (id, realm, str(e)))
+        except Exception as e:
+            self.module.fail_json(msg='Could not obtain client %s for realm %s: %s'
+                                      % (id, realm, str(e)))
 
     def update_client(self, id, clientrep, realm="master"):
         """ Update an existing client
